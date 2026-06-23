@@ -1,0 +1,8 @@
+Drop a landscape property photo here named exactly:
+
+    login-property.jpg
+
+It fills the left panel of the /login screen (a dark gradient is layered on
+top, so almost any warm, well-lit exterior or interior shot works). Recommended
+size: ~1600×2000px or larger. If this file is missing the panel falls back to a
+solid dark background — the app still works.

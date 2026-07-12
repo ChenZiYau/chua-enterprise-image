@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorized } from "@/lib/apiAuth";
 import { getIndex, saveIndex } from "@/lib/storage";
 import type { ImageEntry } from "@/lib/types";
 
+// Bearer-protected: only the dashboard's server-side proxies hold the shared
+// VAULT_API_KEY. The public gallery pages read the index server-side via
+// lib/storage directly and never touch this route.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -10,7 +14,10 @@ interface RouteContext {
 }
 
 /** GET /api/images/[propertyId] — load saved image metadata for a property. */
-export async function GET(_req: NextRequest, ctx: RouteContext) {
+export async function GET(req: NextRequest, ctx: RouteContext) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
   const { propertyId } = await ctx.params;
   try {
     const index = await getIndex(propertyId);
@@ -25,6 +32,9 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
 
 /** PUT /api/images/[propertyId] — persist the full image list for a property. */
 export async function PUT(req: NextRequest, ctx: RouteContext) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
   const { propertyId } = await ctx.params;
 
   let body: unknown;

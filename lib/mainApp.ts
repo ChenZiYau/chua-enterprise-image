@@ -49,7 +49,7 @@ export async function fetchProperties(): Promise<Property[]> {
 
   let res: Response;
   try {
-    res = await fetch(`${baseUrl}/api/notion/properties`, {
+    res = await fetch(`${baseUrl}/api/vault/properties`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       // Properties change rarely; cache briefly to keep the Vault snappy.
       next: { revalidate: 60 },

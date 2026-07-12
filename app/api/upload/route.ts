@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorized } from "@/lib/apiAuth";
 import { uploadImage } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -7,11 +8,16 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 /**
- * POST /api/upload
+ * POST /api/upload — bearer-protected (shared VAULT_API_KEY); only the
+ * dashboard's server-side upload proxy calls this.
  * multipart/form-data: { file, propertyId, id, kind }
  * Stores the binary in Vercel Blob and returns its public URL.
  */
 export async function POST(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let form: FormData;
   try {
     form = await req.formData();

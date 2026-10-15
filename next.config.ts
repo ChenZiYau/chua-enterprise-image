@@ -12,6 +12,18 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+// The dashboard's Share page previews galleries inside an iframe, so /p/*
+// allows framing by the dashboard origin (MAIN_APP_URL) and local dev only.
+// frame-ancestors supersedes X-Frame-Options in every modern browser.
+const dashboardOrigin = (process.env.MAIN_APP_URL ?? "").replace(/\/+$/, "");
+const galleryHeaders = [
+  ...securityHeaders.filter((h) => h.key !== "X-Frame-Options"),
+  {
+    key: "Content-Security-Policy",
+    value: `frame-ancestors 'self' ${dashboardOrigin} http://localhost:3000`.replace(/\s+/g, " "),
+  },
+];
+
 const nextConfig: NextConfig = {
   images: {
     // Vercel Blob serves images from this host; allow them through next/image
@@ -21,7 +33,10 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/p/:path*", headers: galleryHeaders },
+      { source: "/((?!p/).*)", headers: securityHeaders },
+    ];
   },
 };
 

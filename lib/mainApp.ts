@@ -90,6 +90,7 @@ function normaliseProperty(input: unknown): Property | null {
 
   return {
     id,
+    slug: str(obj.slug) || undefined,
     name,
     shortName: str(obj.shortName ?? obj.short ?? name),
     city: str(obj.city ?? obj.location ?? ""),

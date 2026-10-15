@@ -5,6 +5,8 @@
 /** A property as exposed by the main property-management dashboard. */
 export interface Property {
   id: string;
+  /** Optional custom share-link slug; galleries resolve /p/<slug> to this property. */
+  slug?: string;
   name: string;
   shortName: string;
   city: string;

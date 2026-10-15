@@ -16,12 +16,18 @@ interface PageProps {
   params: Promise<{ propertyId: string }>;
 }
 
-async function loadProperty(propertyId: string): Promise<Property | null> {
-  // The property name is cosmetic here — if the main app is unreachable the
-  // gallery must still render for the customer.
+async function loadProperty(key: string): Promise<Property | null> {
+  // The URL segment is either a property id or a custom slug set from the
+  // dashboard. If the main app is unreachable the gallery must still render
+  // for the customer (id-based links keep working via the fallback below).
   try {
     const properties = await fetchProperties();
-    return properties.find((p) => p.id === propertyId) ?? null;
+    const lower = key.toLowerCase();
+    return (
+      properties.find(
+        (p) => p.id === key || (p.slug && p.slug.toLowerCase() === lower),
+      ) ?? null
+    );
   } catch {
     return null;
   }
@@ -49,12 +55,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PublicGalleryPage({ params }: PageProps) {
   const { propertyId: raw } = await params;
-  const propertyId = decodeURIComponent(raw);
+  const key = decodeURIComponent(raw);
 
-  const [property, images] = await Promise.all([
-    loadProperty(propertyId),
-    loadImages(propertyId),
-  ]);
+  // Resolve a slug to its canonical property id; blob storage is keyed by id.
+  const property = await loadProperty(key);
+  const images = await loadImages(property?.id ?? key);
 
   return <PublicGallery property={property} images={images} />;
 }
